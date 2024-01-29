@@ -1,0 +1,16 @@
+corrida.mp4 127.0.0.1 8081
+corrida.mp4 127.0.0.1 8082
+corrida.mp4 127.0.0.1 8081
+corrida.mp4 127.0.0.1 8083
+pipau.mp4 127.0.0.1 8083
+pipau.mp4 127.0.0.1 8082
+pipau.mp4 127.0.0.1 8081
+pombo.mp4 127.0.0.1 8082
+pombo.mp4 127.0.0.1 8083
+pombo.mp4 127.0.0.1 8081
+corrida.mp4 127.0.0.1 8081
+corrida.mp4 127.0.0.1 8083
+corrida.mp4 127.0.0.1 8082
+pipau.mp4 127.0.0.1 8082
+pipau.mp4 127.0.0.1 8081
+pipau.mp4 127.0.0.1 8083

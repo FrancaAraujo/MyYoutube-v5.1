@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MyYoutube</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Listagem de Vídeos</h1>
+    </header>
+    <div class="container">
+        <ul id="lista-videos">
+        {% for nome_arquivo in nomes_arquivos %}
+            <li>
+                <a href="#" id-video="{{ nome_arquivo }}">{{ nome_arquivo }}</a>
+            </li>
+        {% endfor %}
+        </ul>
+        <video width="640" height="360" controls id="video-player">
+            Seu navegador não suporta a exibição de vídeos.
+        </video>
+    </div>
+</body>
+   <script>
+    const listaVideos = document.getElementById("lista-videos");
+    const reprodutor = document.getElementById("video-player");
+
+    listaVideos.addEventListener("click", function(e) {
+        if (e.target.tagName === "A") {
+            e.preventDefault();
+            const dataSrc = e.target.getAttribute("id-video");
+            const videoUrl = "/stream?id="+dataSrc;
+            const source = reprodutor.firstElementChild;
+            reprodutor.src = videoUrl;
+            reprodutor.load();
+            reprodutor.play();
+        }
+    });
+    </script>
+</html>
