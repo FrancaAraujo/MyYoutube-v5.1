@@ -6,25 +6,31 @@ HOST = "0.0.0.0"
 PORT = 9999
 
 def handle_client(client_socket):
-    conn = rpyc.connect("localhost", 10000)  # Conexão com o DataManager
-
+    config = {"sync_request_timeout": None}
+    conn = rpyc.connect("localhost", 10000, config=config)  # Conexão com o DataManager
     request = client_socket.recv(2**20).decode()
-
+    client_socket.send("PRONTO".encode())
 
     if request.startswith("UPLOAD "):
+        # Recebe o tamanho do vídeo
+        video_size = int.from_bytes(client_socket.recv(8), byteorder='big')
         file_name = request[7:]
         print(f"Receiving file: {file_name}")
-
-        done = False
-        temp = b""
-        while not done:
-            data = client_socket.recv(1024)
-            if data[-5:] == b"<END>":
-                done = True
-                conn.root.upload_file(file_name, data[:-5])
-            else:
-                conn.root.upload_file(file_name, data)
-                
+        
+        def video_generator():
+            chunk_size = 2**20
+            received_size = 0
+            while received_size < video_size:
+                print(f"{received_size} {video_size}")
+                chunk = client_socket.recv(chunk_size)
+                print(len(chunk))
+                if not chunk:
+                    print("cheguei mas buguei")
+                    break
+                received_size += len(chunk)
+                yield chunk
+        
+        conn.root.upload_file(file_name, video_generator())
         print(f"File '{file_name}' received and saved.")
 
     elif request.startswith("STREAM "):
@@ -32,9 +38,9 @@ def handle_client(client_socket):
         print(f"Streaming video: {video_file}")
 
         video_data = conn.root.stream_file(video_file)
-        if video_data:
-            client_socket.sendall(video_data)
-            client_socket.send(b"<END>")
+        for data_chunk in video_data:
+            print("entrei")
+            client_socket.sendall(data_chunk)
         client_socket.close()
         print(f"Video '{video_file}' streamed.")
 

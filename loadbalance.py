@@ -1,6 +1,8 @@
 import rpyc
 
-monitor = rpyc.connect("localhost", 11111).root
+config = {"sync_request_timeout": None}
+monitor = rpyc.connect("localhost", 11112, config=config).root
+
 
 class LoadService(rpyc.Service):
     def __init__(self):
@@ -30,5 +32,5 @@ class LoadService(rpyc.Service):
 # Inicialização do servidor...
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer
-    t = ThreadedServer(LoadService, port=12222)
+    t = ThreadedServer(LoadService, port=12222, protocol_config={"sync_request_timeout": None})
     t.start()

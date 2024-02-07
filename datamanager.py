@@ -1,8 +1,10 @@
 import rpyc
 from rpyc.utils.server import ThreadedServer
 import os
+import time
 
-loadbalance = rpyc.connect("localhost", 12222).root
+config = {"sync_request_timeout": None}
+loadbalance = rpyc.connect("localhost", 12222, config=config).root
 
 class DataNodeManagerService(rpyc.Service):
     def __init__(self):
@@ -27,11 +29,18 @@ class DataNodeManagerService(rpyc.Service):
         return index
 
     def exposed_upload_file(self, file_name, data):
+        
         chosen_datanodes = loadbalance.get_next_datanodes()
-        for ip, port in chosen_datanodes:
-            conn = rpyc.connect(ip, port)
-            conn.root.upload_file(file_name, data)
-            conn.close()
+        print(chosen_datanodes)
+        for data_chunk in data:
+            print("entrei")
+            for ip, port in chosen_datanodes:
+                config = {"sync_request_timeout": None}
+                conn = rpyc.connect(ip, port, config=config)
+                storage_service = conn.root
+                storage_service.upload_file(file_name, data_chunk)
+                conn.close()
+
         self.index[file_name] = chosen_datanodes
         with open("index.txt", "a") as index_file:
             for ip, port in chosen_datanodes:
@@ -54,28 +63,46 @@ class DataNodeManagerService(rpyc.Service):
 
         # Atualiza o contador para o próximo datanode
         self.file_streaming_index = (self.file_streaming_index + 1) % len(livedatanodes)
-        
+        print(selected_datanode)
         return selected_datanode
-    
+
     def exposed_stream_file(self, file_name):
         print(f"Streaming video: {file_name}")
-        if file_name not in self.index:
-            return None
-
-        ip, port = self.get_next_datanode_for_streaming(file_name)
-        conn = rpyc.connect(ip, port)
-        video_data = conn.root.stream_file(file_name)
-        conn.close()
-
-        print(f"Video '{file_name}' streamed.")
-        return video_data
+        return self.download(file_name)
 
     def exposed_list_files(self):
+        print("HEHE")
         return list(self.index.keys())
 
     def exposed_search_files(self, search_query):
         return [file_name for file_name in self.index if search_query in file_name]
 
+    def download(self, file_name, from_byte=0):
+        while True:
+            try:
+                ip, port = self.get_next_datanode_for_streaming(file_name)
+                config = {"sync_request_timeout": None}
+                datanode_service = rpyc.connect(ip, port, config=config)
+                print("conectei")
+                new_byte = 0
+                catching_up = True
+                for chunk in datanode_service.root.stream_file(file_name):
+                    print("entrei no for")
+                    if catching_up == True:
+                        if new_byte == from_byte:
+                            print("catching false")
+                            catching_up = False
+                        else:
+                            print("new_byte")
+                            new_byte += len(chunk)
+                    if catching_up == False:
+                        from_byte += len(chunk)
+                        print("entrei")
+                        yield chunk
+            except Exception as e:
+                time.sleep(30)
+                print("Failed while downloading file, trying to connect to another node")
+
 if __name__ == "__main__":
-    manager_server = ThreadedServer(DataNodeManagerService, port=10000)
+    manager_server = ThreadedServer(DataNodeManagerService, port=10000, protocol_config={"sync_request_timeout": None})
     manager_server.start()

@@ -18,6 +18,8 @@ def listar_arquivos():
     client.connect((HOST, PORT))
 
     client.send(f"LISTAR ".encode())  # Use the "STREAM" request format
+    client.recv(2**20)
+
     # Receba a lista de nomes de arquivo do servidor
     data = client.recv(2**20).decode('utf-8')
     nomes_arquivos = data.split(',')
@@ -33,6 +35,8 @@ def search_arquivos():
     client.connect((HOST, PORT))
 
     client.send(f"SEARCH {file_name}".encode())
+    client.recv(2**20)
+
     # Receba a lista de nomes de arquivo do servidor
     data = client.recv(2**20).decode('utf-8')
     nomes_arquivos = data.split(',')
@@ -51,17 +55,18 @@ def upload():
     client.send(f"UPLOAD {file_name}".encode())
 
     chunk_size = 2**20  # Tamanho do chunk (pode ser ajustado conforme necessário)
+    client.recv(chunk_size)
+    data = file.read()
+    # Envia o tamanho do vídeo antes dos dados reais
+    client.sendall(len(data).to_bytes(8, byteorder='big'))
 
-    while True:
-        data = file.read(chunk_size)
-        if not data:
-            break  # Se não houver mais dados, saia do loop
-        client.sendall(data)
-
-    client.send(b"<END>")
-    client.close()
-
-
+    # Envia o vídeo em chunks
+    chunk_size = 2**20
+    for i in range(0, len(data), chunk_size):
+        client.sendall(data[i:i+chunk_size])
+    # Enviar o último chunk, se houver
+    if i < len(data):
+        client.sendall(data[i:])
     client.close()
 
     return "File uploaded successfully! You can now upload another file."
@@ -73,6 +78,7 @@ def stream():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((HOST, PORT))
     client.send(f"STREAM {video_name}".encode())  # Use the "STREAM" request format
+    client.recv(2**20)
 
     def generate(client):
         chunk_size = 2**20  # Tamanho dos pedaços em "bytes"

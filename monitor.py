@@ -71,5 +71,5 @@ def alive_from_list(address_list):
 # Inicializa o servidor de objeto remoto e o registra no serviço de nomes
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer
-    t = ThreadedServer(MonitorService, port=11111, auto_register=True, protocol_config={"allow_public_attrs": True})
+    t = ThreadedServer(MonitorService, port=11112, auto_register=True, protocol_config={"allow_public_attrs": True})
     t.start()
