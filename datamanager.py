@@ -83,24 +83,19 @@ class DataNodeManagerService(rpyc.Service):
                 ip, port = self.get_next_datanode_for_streaming(file_name)
                 config = {"sync_request_timeout": None}
                 datanode_service = rpyc.connect(ip, port, config=config)
-                print("conectei")
                 new_byte = 0
                 catching_up = True
                 for chunk in datanode_service.root.stream_file(file_name):
-                    print("entrei no for")
                     if catching_up == True:
                         if new_byte == from_byte:
-                            print("catching false")
                             catching_up = False
                         else:
-                            print("new_byte")
                             new_byte += len(chunk)
                     if catching_up == False:
                         from_byte += len(chunk)
-                        print("entrei")
                         yield chunk
+                break
             except Exception as e:
-                time.sleep(30)
                 print("Failed while downloading file, trying to connect to another node")
 
 if __name__ == "__main__":

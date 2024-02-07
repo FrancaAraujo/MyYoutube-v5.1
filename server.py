@@ -1,6 +1,7 @@
 import rpyc
 import threading
 import socket
+import time
 
 HOST = "0.0.0.0"
 PORT = 9999
@@ -38,9 +39,20 @@ def handle_client(client_socket):
         print(f"Streaming video: {video_file}")
 
         video_data = conn.root.stream_file(video_file)
+        start_time = time.time()
+        auxtime = 0
         for data_chunk in video_data:
-            print("entrei")
-            client_socket.sendall(data_chunk)
+            if auxtime ==0:
+                auxtime +=1
+                start_time_chunk = time.time()
+                client_socket.sendall(data_chunk)
+                total_time_chunk = time.time() - start_time_chunk
+            else:
+                client_socket.sendall(data_chunk)
+            print(len(data_chunk))
+        total_time = time.time() - start_time
+        print(f'Time to send first chunk "{video_file}": {total_time_chunk} seconds')
+        print(f'Time to send "{video_file}": {total_time} seconds')
         client_socket.close()
         print(f"Video '{video_file}' streamed.")
 
