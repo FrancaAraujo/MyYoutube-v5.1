@@ -2,7 +2,7 @@ import rpyc
 import os
 
 config = {"sync_request_timeout": None}
-monitor = rpyc.connect("localhost", 11112, config=config).root
+monitor = rpyc.connect("localhost", 11112, config=config).root #colocar o ip do monitor
 
 PORT = 8081
 monitor.register(PORT)

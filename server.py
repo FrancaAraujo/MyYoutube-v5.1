@@ -8,7 +8,7 @@ PORT = 9999
 
 def handle_client(client_socket):
     config = {"sync_request_timeout": None}
-    conn = rpyc.connect("localhost", 10000, config=config)  # Conexão com o DataManager
+    conn = rpyc.connect("localhost", 10000, config=config)  # Conexão com o DataManager trocar o ip para o ip do datamanager
     request = client_socket.recv(2**20).decode()
     client_socket.send("PRONTO".encode())
 

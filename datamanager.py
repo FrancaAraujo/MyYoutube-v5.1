@@ -4,7 +4,7 @@ import os
 import time
 
 config = {"sync_request_timeout": None}
-loadbalance = rpyc.connect("localhost", 12222, config=config).root
+loadbalance = rpyc.connect("localhost", 12222, config=config).root #colocar o ip ao inves de localhost da maquina do loadbalance
 
 class DataNodeManagerService(rpyc.Service):
     def __init__(self):

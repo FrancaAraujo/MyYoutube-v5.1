@@ -1,7 +1,7 @@
 import rpyc
 
 config = {"sync_request_timeout": None}
-monitor = rpyc.connect("localhost", 11112, config=config).root
+monitor = rpyc.connect("localhost", 11112, config=config).root #colocar o ip do monitor
 
 
 class LoadService(rpyc.Service):

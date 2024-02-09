@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, Response
 import socket
 
-HOST = "192.168.100.5" #localhost
+HOST = "192.168.100.5" #id do server
 PORT = 9999
 
 app = Flask(__name__)
